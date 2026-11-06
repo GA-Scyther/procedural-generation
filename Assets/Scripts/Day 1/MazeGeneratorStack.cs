@@ -27,7 +27,9 @@ public class MazeGeneratorStack : MonoBehaviour
         CUBE,
         BASIC_TEXTURE,
         ADVANCED_TEXTURE,
-        ADVANCED_TEXTURE_HSV
+        ADVANCED_TEXTURE_HSV,
+        TRIANGLE,
+        WHITE_NOISE
     }
 
     public MazeGenerationType _mazeGenerationType = MazeGenerationType.ADVANCED_TEXTURE;
@@ -403,7 +405,20 @@ public class MazeGeneratorStack : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        Run();
+
+        switch (_mazeGenerationType)
+        {
+            case MazeGenerationType.TRIANGLE:
+                _renderer.material.mainTexture = TextureGenerator.GenerateBitPatern(_width, _height, apply: true);
+                break;
+            case MazeGenerationType.WHITE_NOISE:
+                _rng = new System.Random(_seed);
+                _renderer.material.mainTexture = TextureGenerator.WhiteNoise(_width, _height, _rng, apply: true);
+                break;
+            default:
+                Run();
+                break;
+        }
     }
 
 
@@ -426,6 +441,8 @@ public class MazeGeneratorStack : MonoBehaviour
                 break;
             case MazeGenerationType.ADVANCED_TEXTURE_HSV:
                 CreateAdvancedTexture();
+                break;
+            case MazeGenerationType.TRIANGLE:
                 break;
             default:
                 CreateAdvancedTexture();
