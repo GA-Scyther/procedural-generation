@@ -1,0 +1,52 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+
+
+RWStructuredBuffer<float3> _verticies;
+RWStructuredBuffer<float3> _normals;
+RWStructuredBuffer<float2> _uvs;
+RWStructuredBuffer<int> _triangles;
+
+StructuredBuffer<uint> _triangleIndex;
+
+uint size;
+uint limit;
+
+[numthreads(64, 1, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= limit) return;
+    
+    uint x = floor((float) id.x / (float) size);
+    uint y = ((float) id.x % (float) size);
+    
+    _verticies[id.x] = float3(x, 0, y);
+    _normals[id.x] = float3(0, 1, 0);
+    _uvs[id.x] = float2((float) x / (float) size, (float) y / (float) size);
+    
+    //if (x < size-1 && y < size-1)
+    if (((id.x + 1) % size != 0) && (id.x / size < size - 1))
+    {
+        //_triangles[((y * (size - 1) + x) * 6) + 2] = id.x
+        //_triangles[((y * (size - 1) + x) * 6) + 1] = id.x + size;
+        //_triangles[((y * (size - 1) + x) * 6) + 0] = id.x + size + 1;
+        
+        //_triangles[((y * (size - 1) + x) * 6) + 5] = id.x;
+        //_triangles[((y * (size - 1) + x) * 6) + 4] = id.x + size + 1;
+        //_triangles[((y * (size - 1) + x) * 6) + 3] = id.x + 1;
+        
+        
+        _triangles[(_triangleIndex[id.x] * 6) + 2] = id.x;
+        _triangles[(_triangleIndex[id.x] * 6) + 1] = id.x + size;
+        _triangles[(_triangleIndex[id.x] * 6) + 0] = id.x + size + 1;
+        
+        _triangles[(_triangleIndex[id.x] * 6) + 5] = id.x;
+        _triangles[(_triangleIndex[id.x] * 6) + 4] = id.x + size + 1;
+        _triangles[(_triangleIndex[id.x] * 6) + 3] = id.x + 1;
+
+    }
+    
+}
