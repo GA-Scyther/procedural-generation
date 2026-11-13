@@ -1,0 +1,42 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+RWStructuredBuffer<float3> _verticies;
+RWStructuredBuffer<float3> _normals;
+RWStructuredBuffer<float2> _uvs;
+RWStructuredBuffer<int> _triangles;
+
+StructuredBuffer<uint> _triangleIndex;
+
+uint size;
+half scale;
+uint limit;
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // Calculate 1d index (no division should be faster???)
+    uint i = id.y * size + id.x;
+    
+    // If above limit return;
+    if (i >= limit) return;
+    
+    
+    _verticies[i] = float3(id.x * scale, 0, id.y * scale);
+    _normals[i] = float3(0, 1, 0);
+    _uvs[i] = float2((float) id.x / (float) size, (float) id.y / (float) size);
+    
+    
+    //if (((id.x + 1) % size != 0) && (id.x / size < size - 1))
+    if (id.x < size-1 && id.y < size-1)
+    {
+        _triangles[(_triangleIndex[i] * 6) + 0] = i;
+        _triangles[(_triangleIndex[i] * 6) + 1] = i + size;
+        _triangles[(_triangleIndex[i] * 6) + 2] = i + size + 1;
+        
+        _triangles[(_triangleIndex[i] * 6) + 3] = i;
+        _triangles[(_triangleIndex[i] * 6) + 4] = i + size + 1;
+        _triangles[(_triangleIndex[i] * 6) + 5] = i + 1;
+    }
+    
+}

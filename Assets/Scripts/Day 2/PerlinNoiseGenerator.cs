@@ -1,5 +1,6 @@
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Assertions.Comparers;
 using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.UIElements;
 
@@ -32,17 +33,35 @@ public class PerlinNoiseGenerator : MonoBehaviour
     static public float[,] GeneratePerlinNoiseMatrixOctaves(int width, int height, Vector2[] octaves, float scale, float persistance, float lacunarity, Vector2 offset)
     {
         float[,] matrix = new float[width, height];
-        float minValue = float.MaxValue;
-        float maxValue = float.MinValue;
+        //float minValue = float.MaxValue;
+        //float maxValue = float.MinValue;
+
+        float minValue = 0;
+        float maxValue = 1;
+
+        float amplitude = 1, frequency = 1;
+
+        for (int i = 0; i < octaves.Length; i++)
+        {
+            float min = 0 * 2 - 1;
+            float max = 1 * 2 - 1;
+
+            minValue += min * amplitude;
+            maxValue += max * amplitude;
+
+            amplitude *= persistance;
+            frequency *= lacunarity;
+        }
+
 
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                float amplitude = 1, frequency = 1;
+                amplitude = 1; frequency = 1;
                 float value = 0;
 
-                foreach (var octave in octaves)
+                foreach (Vector2 octave in octaves)
                 {
                     float sampleX = ((x - width / 2) + offset.x) / scale * frequency + octave.x;
                     float sampleY = ((y - width / 2) + offset.y) / scale * frequency + octave.y;
@@ -51,11 +70,12 @@ public class PerlinNoiseGenerator : MonoBehaviour
                     value += noise * amplitude;
                     amplitude *= persistance;
                     frequency *= lacunarity;
-                    matrix[x, y] = value;
 
-                    if (value < minValue) minValue = value;
-                    if (value > maxValue) maxValue = value;
+                    //if (value < minValue) minValue = value;
+                    //if (value > maxValue) maxValue = value;
                 }
+
+                matrix[x, y] = value;
             }
         }
 
