@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using UnityEngine;
 
 public static class MeshGenerator
@@ -10,7 +11,6 @@ public static class MeshGenerator
         public Vector3 normal;
         public Vector2 uv;
     }
-
 
     public static Mesh GenerateTri(Vector3 vertex1, Vector3 vertex2, Vector3 vertex3)
     {
@@ -55,6 +55,7 @@ public static class MeshGenerator
     {
         Mesh mesh = new Mesh();
 
+
         Vector3[] vertices = new Vector3[_width * _height];
         Vector3[] normals = new Vector3[_width * _height];
         Vector2[] uvs = new Vector2[_width * _height];
@@ -65,11 +66,11 @@ public static class MeshGenerator
         // Generate Mesh
         for (int i = 0; i < _width * _height; i++)
         {
-
             // Create Vertex
             //vertices[i] = new Vector3((i - _width) * scale, 0, Mathf.Floor(i / _width) * scale);
             int x = (int)Mathf.Floor(i / _width);
             int y = (i % _width);
+
             vertices[i] = new Vector3(x * scale, 0, y * scale);
             normals[i] = Vector3.up;
             uvs[i] = new Vector2(x / (float)(_width), y / (float)(_height));
@@ -91,6 +92,63 @@ public static class MeshGenerator
                 triangles[(triIndex * 6) + 3] = i + 1;
                 triIndex++;
             }
+
+        }
+
+
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
+        mesh.normals = normals;
+        mesh.uv = uvs;
+
+        return mesh;
+    }
+    public static Mesh GenerateWorldPlaneMesh(float scale, int lod, float[,] matrix, float heightMultiplier)
+    {
+        Mesh mesh = new Mesh();
+
+        int increment = 1 << lod;
+
+        int size = matrix.GetLength(0);
+
+        int verticesPerLine = size - 1 / increment + 1;
+
+        Vector3[] vertices = new Vector3[verticesPerLine * verticesPerLine];
+        Vector3[] normals = new Vector3[verticesPerLine * verticesPerLine];
+        Vector2[] uvs = new Vector2[verticesPerLine * verticesPerLine];
+        // Number of squares * 3 Vertexs * 2 tris
+        int[] triangles = new int[(verticesPerLine - 1) * (verticesPerLine - 1) * 3 * 2];
+        int triIndex = 0;
+
+        // Generate Mesh
+        for (int i = 0; i < verticesPerLine * verticesPerLine; i+=increment)
+        {
+            // Create Vertex
+            //vertices[i] = new Vector3((i - verticesPerLine) * scale, 0, Mathf.Floor(i / verticesPerLine) * scale);
+            int x = (int)Mathf.Floor(i / verticesPerLine);
+            int y = (i % verticesPerLine);
+
+            vertices[i] = new Vector3(x * scale, matrix[x, y] * heightMultiplier, y * scale);
+            normals[i] = Vector3.up;
+            uvs[i] = new Vector2(x / (float)(verticesPerLine), y / (float)(verticesPerLine));
+            //(y * width) + x
+
+            // Check point is not at edge
+            if (((i + 1) % verticesPerLine != 0) && (i / verticesPerLine < verticesPerLine - 1))
+            //if (i / verticesPerLine < _height || i )
+            {
+                // Tri 1
+                triangles[(triIndex * 6) + 2] = i;
+                triangles[(triIndex * 6) + 1] = i + verticesPerLine;
+                triangles[(triIndex * 6) + 0] = i + verticesPerLine + 1;
+                //triIndex++;
+
+                //// Tri 2
+                triangles[(triIndex * 6) + 5] = i;
+                triangles[(triIndex * 6) + 4] = i + verticesPerLine + 1;
+                triangles[(triIndex * 6) + 3] = i + 1;
+                triIndex++;
+            }
         }
 
 
@@ -102,8 +160,10 @@ public static class MeshGenerator
         return mesh;
     }
 
-    public static Mesh ModifyWorldPlaneMeshFromMatrix(float[,] matrix, Mesh mesh, float scale)
+    public static Mesh ModifyWorldPlaneMeshFromMatrix(float[,] matrix, Mesh mesh, float scale, int lod = 0)
     {
+        int increment = 1 << lod;
+
         int width = matrix.GetLength(0);
         //int height = matrix.GetLength(1);
         Vector3[] vertices = new Vector3[mesh.vertices.Length];
@@ -113,7 +173,7 @@ public static class MeshGenerator
             Vector3 tri = mesh.vertices[i];
             int x = (int)Mathf.Floor(i / width);
             int y = (i % width);
-            tri.y = matrix[x, y] * scale;
+            tri.y = matrix[x * increment, y * increment] * scale;
             //Debug.Log(matrix[x, y]);
             vertices[i] = tri;
         }

@@ -7,11 +7,12 @@ using static UnityEngine.Rendering.DebugUI;
 using static UnityEngine.Rendering.DebugUI.Table;
 
 
-public class World
+public class WorldInstance
 {
     public struct WorldData
     {
         public Mesh mesh;
+        public Mesh collider;
         public Texture2D texture;
     }
 
@@ -146,7 +147,6 @@ public class World
 
         JobHandle heightModifiderHandle = heightModifier.Schedule(size * size, 64);
 
-
         heightModifiderHandle.Complete();
         verticiesFloat3.Reinterpret<Vector3>().CopyTo(vertices);
 
@@ -192,7 +192,7 @@ public class World
         {
             // Min should be -1 for cnoise and 0 for Mathf.PerlinNoise
             // Changed to 0-2 for cnoise
-            min = -1f * 2f - 1f;
+            min = 0f * 2f - 1f;
             max = 1f * 2f - 1f;
 
             min += min * amplitude;

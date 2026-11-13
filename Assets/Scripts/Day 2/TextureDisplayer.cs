@@ -19,10 +19,14 @@ public class TextureDisplayer : MonoBehaviour
     public float _persistance = 0.5f;
     public float _lacunarity = 2f;
 
+    public int _meshLod = 0;
+    public int _collisionLod = 0;
+
     private System.Random _rng;
 
     public MeshRenderer _renderer;
     public MeshFilter _meshFilter;
+    public MeshCollider _meshColldier;
 
     public enum RenderMode
     {
@@ -72,6 +76,7 @@ public class TextureDisplayer : MonoBehaviour
     private void OnValidate()
     {
         Generate();
+        //GenerateMesh();
     }
 
     public void Generate()
@@ -217,10 +222,14 @@ public class TextureDisplayer : MonoBehaviour
 
         Stopwatch stopwatch = Stopwatch.StartNew();
 
+
         switch (_meshGenerationMode)
         {
             case MeshGenerationMode.CPU:
-                _meshFilter.mesh = MeshGenerator.ModifyWorldPlaneMeshFromMatrix(noise, MeshGenerator.GenerateWorldPlaneMesh(_width, _height, _meshScale), _heightScale);
+                //_meshFilter.mesh = MeshGenerator.ModifyWorldPlaneMeshFromMatrix(noise, MeshGenerator.GenerateWorldPlaneMesh(_width, _height, _meshScale, _meshLod), _heightScale);
+                //_meshColldier.sharedMesh = MeshGenerator.ModifyWorldPlaneMeshFromMatrix(noise, MeshGenerator.GenerateWorldPlaneMesh(_width, _height, _meshScale, _collisionLod), _heightScale);
+                //_meshFilter.mesh = MeshGenerator.GenerateWorldPlaneMesh(_width, _height, _meshScale, _meshLod, noise, _heightScale);
+                _meshColldier.sharedMesh = MeshGenerator.GenerateWorldPlaneMesh(_width, _height, _meshScale, _collisionLod, noise, _heightScale);
                 break;
             case MeshGenerationMode.GPU:
                 _meshFilter.mesh = MeshGenerator.ModifyWorldPlaneMeshFromMatrix(noise, _meshGenGPU.GenerateMeshGPU(_width), _heightScale);
