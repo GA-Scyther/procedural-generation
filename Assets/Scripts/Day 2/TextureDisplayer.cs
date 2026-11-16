@@ -229,7 +229,7 @@ public class TextureDisplayer : MonoBehaviour
                 //_meshFilter.mesh = MeshGenerator.ModifyWorldPlaneMeshFromMatrix(noise, MeshGenerator.GenerateWorldPlaneMesh(_width, _height, _meshScale, _meshLod), _heightScale);
                 //_meshColldier.sharedMesh = MeshGenerator.ModifyWorldPlaneMeshFromMatrix(noise, MeshGenerator.GenerateWorldPlaneMesh(_width, _height, _meshScale, _collisionLod), _heightScale);
                 //_meshFilter.mesh = MeshGenerator.GenerateWorldPlaneMesh(_width, _height, _meshScale, _meshLod, noise, _heightScale);
-                _meshColldier.sharedMesh = MeshGenerator.GenerateWorldPlaneMesh(_width, _height, _meshScale, _collisionLod, noise, _heightScale);
+                //_meshColldier.sharedMesh = MeshGenerator.GenerateWorldPlaneMesh(_width, _height, _meshScale, _collisionLod, noise, _heightScale);
                 break;
             case MeshGenerationMode.GPU:
                 _meshFilter.mesh = MeshGenerator.ModifyWorldPlaneMeshFromMatrix(noise, _meshGenGPU.GenerateMeshGPU(_width), _heightScale);
