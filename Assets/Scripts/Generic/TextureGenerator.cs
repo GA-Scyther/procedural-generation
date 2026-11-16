@@ -1,7 +1,7 @@
 using NUnit.Framework.Internal.Commands;
 using UnityEngine;
 
-public class TextureGenerator : MonoBehaviour
+public class TextureGenerator
 {
 
     public static Texture2D GenerateBlankTexture(int width, int height, bool apply = true)
@@ -87,7 +87,7 @@ public class TextureGenerator : MonoBehaviour
     }
 
 
-    public static Texture2D TextureFromMatrix(int[,] matrix, int max, Color minColor, Color maxColor, bool blackNegatives = true, bool whiteZero = false, bool apply = true)
+    public static Texture2D TextureFromMatrix(int[,] matrix, int max, Color minColor, Color maxColor, bool blackNegatives = true, bool whiteZero = false, bool apply = true, bool point = true)
     {
         Texture2D texture = new Texture2D(matrix.GetLength(0), matrix.GetLength(1));
 
@@ -110,12 +110,12 @@ public class TextureGenerator : MonoBehaviour
             }
         }
 
-        texture.filterMode = FilterMode.Point;
+        if (point) texture.filterMode = FilterMode.Point;
         if (apply) texture.Apply();
         return texture;
     }
 
-    public static Texture2D TextureFromMatrix(int[,] matrix, int max, bool blackNegatives = true, bool whiteZero = false, bool apply = true)
+    public static Texture2D TextureFromMatrix(int[,] matrix, int max, bool blackNegatives = true, bool whiteZero = false, bool apply = true, bool point = true)
     {
         Texture2D texture = new Texture2D(matrix.GetLength(0), matrix.GetLength(1));
 
@@ -139,7 +139,7 @@ public class TextureGenerator : MonoBehaviour
             }
         }
 
-        texture.filterMode = FilterMode.Point;
+        if (point) texture.filterMode = FilterMode.Point;
         if (apply) texture.Apply();
         return texture;
     }

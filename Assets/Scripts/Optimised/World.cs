@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -10,6 +11,7 @@ public class World
     private float _lacunarity;
 
     private float _scale;
+    private float _precipitationScale;
     private float _heightScale;
 
     private float _minValue;
@@ -17,10 +19,26 @@ public class World
 
     private int _size;
 
+    private int _seed;
+
     public Vector2Int offset = Vector2Int.zero;
     public AnimationCurve _fallofCurve;
 
+    public TileType[] _tileTypes;
+
+    private System.Random _rng;
+
     //private Dictionary<Vector2, float> _noiseCache;
+
+    [Serializable]
+    public struct TileType
+    {
+        [Range(0, 1)] public float minHeight;
+        [Range(0, 1)] public float maxHeight;
+
+        public Color color;
+    }
+
 
     public struct CombinedWorldData
     {
@@ -135,9 +153,10 @@ public class World
         public float height;
     }
 
-    public World(int size, Vector2[] octaves, float persistance, float lacunarity, float scale, float heightScale, AnimationCurve fallofCurve)
+    public World(int size, int seed, Vector2[] octaves, float persistance, float lacunarity, float scale, float heightScale, AnimationCurve fallofCurve, TileType[] tileTypes)
     {
         _size = size;
+        _seed = seed;
         _octaves = octaves;
         _persistance = persistance;
         _lacunarity = lacunarity;
@@ -146,6 +165,9 @@ public class World
         _fallofCurve = fallofCurve;
         _scale = scale;
 
+        _rng = new System.Random(seed);
+
+        _tileTypes = tileTypes;
 
         float amplitude = 1, frequency = 1;
         for (int i = 0; i < octaves.Length; i++)
@@ -255,7 +277,8 @@ public class World
                 worldData.AddVertex(x, y, tileData.height * _heightScale);
 
                 // Set Color
-                worldData.SetPixel(x, y, Color.Lerp(Color.black, Color.white, tileData.height));
+                //worldData.SetPixel(x, y, Color.Lerp(Color.black, Color.white, tileData.height));
+                worldData.SetPixel(x, y, CalculateColorTileData(tileData));
 
                 // Add Squares
                 if (x < _size - 1 && y < _size - 1 && x >= 0 && y >= 0)
@@ -303,13 +326,31 @@ public class World
         return output;
     }
 
-    public Color CalculateColorFromLayers(float height)
+    public Color CalculateColorTileData(TileData tileData)
     {
         Color color = new Color();
 
+        List<TileType> possibleTiles = new List<TileType>();
 
+        foreach (TileType tile in _tileTypes)
+        {
+            if (
+                // Tile Height
+                (tileData.height < tile.maxHeight && tileData.height >= tile.minHeight) 
+                // 
+                )
+            {
+                possibleTiles.Add(tile);
 
+            }
+        }
 
+        if (possibleTiles.Count > 0)
+        {
+            color = possibleTiles[_rng.Next(0, possibleTiles.Count)].color;
+        }
+        else color = Color.purple;
+        
 
         return color;
     }

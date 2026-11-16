@@ -21,10 +21,14 @@ public class WorldGen : MonoBehaviour
 
     public AnimationCurve _fallofCurve;
 
+    public bool _pointTexture = false;
+
 
     public MeshRenderer _meshRenderer;
     public MeshFilter _meshFilter;
     public MeshCollider _meshCollidier;
+
+    public World.TileType[] _tileTypes;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -33,15 +37,15 @@ public class WorldGen : MonoBehaviour
 
     private void OnValidate()
     {
-        World.CombinedWorldData combinedWorldData = GenerateWorld(_size, _seed, _octaveQuantity, _persistance, _lacunarity, _scale, _heightScale, _collisionLod, _fallofCurve);
+        World.CombinedWorldData combinedWorldData = GenerateWorld(_size, _seed, _octaveQuantity, _persistance, _lacunarity, _scale, _heightScale, _collisionLod, _fallofCurve, _tileTypes);
         _meshFilter.sharedMesh = combinedWorldData.meshData.GetMesh();
         Texture2D texture = combinedWorldData.meshData.GetTexture();
-        texture.filterMode = FilterMode.Point;
+        if (_pointTexture) texture.filterMode = FilterMode.Point;
         _meshRenderer.sharedMaterial.mainTexture = texture;
         _meshCollidier.sharedMesh = combinedWorldData.collisionData.GetMesh();
     }
 
-    public World.CombinedWorldData GenerateWorld(int size, int seed, int octaveQuantity, float persistance, float lacunarity, float scale, float heightScale, int collisionLod, AnimationCurve fallofCurve)
+    public World.CombinedWorldData GenerateWorld(int size, int seed, int octaveQuantity, float persistance, float lacunarity, float scale, float heightScale, int collisionLod, AnimationCurve fallofCurve, World.TileType[] tileTypes)
     {
         System.Random rng = new System.Random(seed);
 
@@ -51,7 +55,7 @@ public class WorldGen : MonoBehaviour
             octaves[i] = new Vector2(rng.Next(-1000, 1000), rng.Next(-1000, 1000));
         }
 
-        world = new World(size, octaves, persistance, lacunarity, scale, heightScale, fallofCurve);
+        world = new World(size, seed, octaves, persistance, lacunarity, scale, heightScale, fallofCurve, tileTypes);
 
         World.CombinedWorldData worldData = world.GenerateWorld(collisionLod,  true);
 
