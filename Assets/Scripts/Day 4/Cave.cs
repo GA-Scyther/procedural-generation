@@ -1,14 +1,19 @@
+using NUnit.Framework.Internal.Commands;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using Unity.Mathematics;
 using UnityEditor.Search;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class Cave2
 {
     // Wall = 1, Empty = 0
     private int[,] _matrix;
     private int _fillPercentage;
+
+    private byte[,] _tileMap;
 
     private int _seed;
     private System.Random _rng;
@@ -17,7 +22,9 @@ public class Cave2
     {
         _matrix = new int[size, size];
         _fillPercentage = fillPercentage;
-        
+
+        _tileMap = new byte[size, size];
+
         _seed = seed;
         _rng = new System.Random(_seed);
     }
@@ -180,7 +187,7 @@ public class Cave2
         return matrix;
     }
 
-    public static int[,] MaskMatrix(int[,] matrix, int desired, bool invert = false)
+    public int[,] MaskMatrix(int[,] matrix, int desired, bool invert = false, bool set = false)
     {
         for (int x = 0; x < matrix.GetLength(0); x++)
         {
@@ -193,6 +200,18 @@ public class Cave2
                 else if (matrix[x, y] == desired && invert)
                 {
                     matrix[x, y] = 0;
+                }
+
+                if (set)
+                {
+                    if (matrix[x, y] != desired && !invert)
+                    {
+                        _matrix[x, y] = 1;
+                    }
+                    else if (matrix[x, y] != desired && invert)
+                    {
+                        _matrix[x, y] = 1;
+                    }
                 }
             }
         }
@@ -213,14 +232,73 @@ public class Cave2
         return 0;
     }
 
+
+    public byte GetTileCase(int x, int y)
+    {
+        return (byte)((_matrix[x, y] * 1)
+            + (_matrix[x + 1, y] * 2)
+            + (_matrix[x + 1, y + 1] * 4)
+            + (_matrix[x, y + 1]) * 8);
+    }
+
+
+    public void DirtyTile(int x, int y)
+    {
+        //_tileMap[x, y] = GetTileCase(x, y);
+
+        for (int oX = -1; oX < 2; oX++)
+        {
+            for (int oY = -1; oY < 2; oY++)
+            {
+                _tileMap[x + oX, y + oY] = GetTileCase(x + oX, y + oY);
+            }
+        }
+    }
+
+    public void SetTile(int x, int y, int value)
+    {
+        _matrix[x, y] = value;
+        DirtyTile(x, y);
+    }
+
+    public void SwapTile(int x, int y)
+    {
+        if (_matrix[x, y] == 0) _matrix[x, y] = 1;
+        else _matrix[x, y] = 0;
+        DirtyTile(x, y);
+    }
+
+    public void GenerateTileMap()
+    {
+        int size = _matrix.GetLength(0);
+        for (int x = 0; x < size-1; x++)
+        {
+            for (int y = 0; y < size-1; y++)
+            {
+                _tileMap[x, y] = GetTileCase(x, y);
+            }
+        }
+    }
+
+
     public int[,] GetMatrix()
     {
         return _matrix;
     }
 
+    public void SetMatrix(int[,] m)
+    {
+        _matrix = m;
+    }
+
     public int GetCell(int x, int y)
     {
         return _matrix[x, y];
+    }
+
+    public byte[,] GetTileMap()
+    {
+        return _tileMap;
     }
 
 }
